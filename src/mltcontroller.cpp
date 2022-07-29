@@ -468,6 +468,7 @@ void Controller::refreshConsumer(bool scrubAudio)
 bool Controller::saveXML(const QString &filename, Service *service, bool withRelativePaths,
                          QTemporaryFile *tempFile, bool proxy, QString projectNote)
 {
+    LOG_INFO() << "bool Controller::saveXML(const QString &filename, Service *service, bool withRelativePaths,  begin";
     QMutexLocker locker(&m_saveXmlMutex);
     QFileInfo fi(filename);
     Consumer c(profile(), "xml", proxy ? filename.toUtf8().constData() : kMltXmlPropertyName);
@@ -524,6 +525,8 @@ bool Controller::saveXML(const QString &filename, Service *service, bool withRel
             }
         }
     }
+
+    LOG_INFO() << "bool Controller::saveXML(const QString &filename, Service *service, bool withRelativePaths,  end";
     return false;
 }
 

@@ -123,6 +123,7 @@ void Util::showInFolder(const QString &path)
 
 bool Util::warnIfNotWritable(const QString &filePath, QWidget *parent, const QString &caption)
 {
+    LOG_INFO() << "bool Util::warnIfNotWritable(const QString &filePath, QWidget *parent, const QString &caption)";
     // Returns true if not writable.
     if (!filePath.isEmpty() && !filePath.contains("://")) {
         QFileInfo info(filePath);

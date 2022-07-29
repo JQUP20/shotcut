@@ -2946,6 +2946,7 @@ void MainWindow::onProducerChanged()
 
 bool MainWindow::on_actionSave_triggered()
 {
+    LOG_INFO() << "bool MainWindow::on_actionSave_triggered()   begin";
     m_timelineDock->stopRecording();
     if (m_currentFile.isEmpty()) {
         return on_actionSave_As_triggered();
@@ -2965,10 +2966,12 @@ bool MainWindow::on_actionSave_triggered()
         m_undoStack->setClean();
         return true;
     }
+    LOG_INFO() << "bool MainWindow::on_actionSave_triggered()   end";
 }
 
 bool MainWindow::on_actionSave_As_triggered()
 {
+    LOG_INFO() << "bool MainWindow::on_actionSave_As_triggered()   begin";
     QString path = Settings.savePath();
     if (!m_currentFile.isEmpty())
         path = m_currentFile;
@@ -2985,6 +2988,7 @@ bool MainWindow::on_actionSave_As_triggered()
             return false;
         newProject(filename);
     }
+    LOG_INFO() << "bool MainWindow::on_actionSave_As_triggered()   end";
     return !filename.isEmpty();
 }
 
