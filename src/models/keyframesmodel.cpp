@@ -39,24 +39,29 @@ KeyframesModel::~KeyframesModel()
 
 int KeyframesModel::rowCount(const QModelIndex &parent) const
 {
+    LOG_DEBUG() << "BEGIN";
     if (parent.isValid()) {
         // keyframes
         if (parent.row() < m_keyframeCounts.count())
             return m_keyframeCounts[parent.row()];
         return 0;
     }
+    LOG_DEBUG() << "END";
     // parameters
     return m_propertyNames.count();
 }
 
 int KeyframesModel::columnCount(const QModelIndex &parent) const
 {
+    LOG_DEBUG() << "BEGIN";
     Q_UNUSED(parent)
+    LOG_DEBUG() << "END";
     return 1;
 }
 
 QVariant KeyframesModel::data(const QModelIndex &index, int role) const
 {
+    LOG_DEBUG() << "BEGIN";
     if (!m_metadata || !index.isValid())
         return QVariant();
     if (index.parent().isValid()) {
@@ -188,11 +193,14 @@ QVariant KeyframesModel::data(const QModelIndex &index, int role) const
             break;
         }
     }
+
+    LOG_DEBUG() << "END";
     return QVariant();
 }
 
 QModelIndex KeyframesModel::index(int row, int column, const QModelIndex &parent) const
 {
+    LOG_DEBUG() << "BEGIN";
     if (column > 0)
         return QModelIndex();
     QModelIndex result;
@@ -202,19 +210,23 @@ QModelIndex KeyframesModel::index(int row, int column, const QModelIndex &parent
     } else if (row < m_propertyNames.count()) {
         result = createIndex(row, column, NO_PARENT_ID);
     }
+    LOG_DEBUG() << "END";
     return result;
 }
 
 QModelIndex KeyframesModel::parent(const QModelIndex &index) const
 {
+    LOG_DEBUG() << "BEGIN";
     if (!index.isValid() || index.internalId() == NO_PARENT_ID)
         return QModelIndex();
     else
         return createIndex(index.internalId(), 0, NO_PARENT_ID);
+    LOG_DEBUG() << "END";
 }
 
 QHash<int, QByteArray> KeyframesModel::roleNames() const
 {
+    LOG_DEBUG() << "BEGIN";
     QHash<int, QByteArray> roles;
     roles[NameRole]         = "name";
     roles[PropertyNameRole] = "property";
@@ -229,10 +241,12 @@ QHash<int, QByteArray> KeyframesModel::roleNames() const
     roles[MinimumFrameRole] = "minimumFrame";
     roles[MaximumFrameRole] = "maximumFrame";
     return roles;
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::load(QmlFilter *filter, QmlMetadata *meta)
 {
+    LOG_DEBUG() << "BEGIN";
     beginResetModel();
     m_propertyNames.clear();
     m_keyframeCounts.clear();
@@ -250,9 +264,11 @@ void KeyframesModel::load(QmlFilter *filter, QmlMetadata *meta)
         }
     endResetModel();
     emit loaded();
+    LOG_DEBUG() << "END";
 }
 
 bool KeyframesModel::remove(int parameterIndex, int keyframeIndex)
+LOG_DEBUG() << "BEGIN";
 {
     bool error = true;
     if (m_filter && parameterIndex < m_propertyNames.count()) {
@@ -290,11 +306,13 @@ bool KeyframesModel::remove(int parameterIndex, int keyframeIndex)
             }
         }
     }
+    LOG_DEBUG() << "END";
     return error;
 }
 
 int KeyframesModel::previousKeyframePosition(int parameterIndex, int currentPosition)
 {
+    LOG_DEBUG() << "BEGIN";
     int result = -1;
     if (m_filter && parameterIndex < m_propertyNames.count()) {
         QString name = m_propertyNames[parameterIndex];
@@ -307,11 +325,14 @@ int KeyframesModel::previousKeyframePosition(int parameterIndex, int currentPosi
                 result += m_filter->in();
         }
     }
+
+    LOG_DEBUG() << "END";
     return result;
 }
 
 int KeyframesModel::nextKeyframePosition(int parameterIndex, int currentPosition)
 {
+    LOG_DEBUG() << "BEGIN";
     int result = -1;
     if (m_filter && parameterIndex < m_propertyNames.count()) {
         QString name = m_propertyNames[parameterIndex];
@@ -324,11 +345,14 @@ int KeyframesModel::nextKeyframePosition(int parameterIndex, int currentPosition
                 result += m_filter->in();
         }
     }
+
+    LOG_DEBUG() << "END";
     return result;
 }
 
 int KeyframesModel::keyframeIndex(int parameterIndex, int currentPosition)
 {
+    LOG_DEBUG() << "BEGIN";
     int result = -1;
     if (m_filter && parameterIndex < m_propertyNames.count()) {
         QString name = m_propertyNames[parameterIndex];
@@ -343,6 +367,8 @@ int KeyframesModel::keyframeIndex(int parameterIndex, int currentPosition)
             }
         }
     }
+
+    LOG_DEBUG() << "END";
     return result;
 }
 
@@ -353,6 +379,7 @@ int KeyframesModel::parameterIndex(const QString &propertyName) const
 
 bool KeyframesModel::setInterpolation(int parameterIndex, int keyframeIndex, InterpolationType type)
 {
+    LOG_DEBUG() << "BEGIN";
     bool error = true;
     if (m_filter && parameterIndex < m_propertyNames.count()) {
         QString name = m_propertyNames[parameterIndex];
@@ -376,11 +403,14 @@ bool KeyframesModel::setInterpolation(int parameterIndex, int keyframeIndex, Int
     if (error)
         LOG_ERROR() << "failed to set keyframe" << "at parameter index" << parameterIndex << "keyframeIndex"
                     << keyframeIndex << "to type" << type;
+
+    LOG_DEBUG() << "END";
     return error;
 }
 
 void KeyframesModel::setKeyframePosition(int parameterIndex, int keyframeIndex, int position)
 {
+    LOG_DEBUG() << "BEGIN";
     if (!m_filter) {
         LOG_ERROR() << "Invalid Filter" << parameterIndex;
         return;
@@ -430,11 +460,14 @@ void KeyframesModel::setKeyframePosition(int parameterIndex, int keyframeIndex, 
     updateNeighborsMinMax(parameterIndex, keyframeIndex);
     emit m_filter->changed();
     emit m_filter->propertyChanged(name.toUtf8().constData());
+
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::addKeyframe(int parameterIndex, double value, int position,
                                  KeyframesModel::InterpolationType type)
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_filter && parameterIndex < m_propertyNames.count()) {
         QString name = m_propertyNames[parameterIndex];
         m_filter->set(name, value, position,  mlt_keyframe_type(type));
@@ -442,10 +475,13 @@ void KeyframesModel::addKeyframe(int parameterIndex, double value, int position,
                      m_metadataIndex[parameterIndex])->gangedProperties())
             m_filter->set(name, value, position,  mlt_keyframe_type(type));
     }
+
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::addKeyframe(int parameterIndex, int position)
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_filter && parameterIndex < m_propertyNames.count()) {
         QString name = m_propertyNames[parameterIndex];
         auto parameter = m_metadata->keyframes()->parameter(m_metadataIndex[parameterIndex]);
@@ -486,10 +522,13 @@ void KeyframesModel::addKeyframe(int parameterIndex, int position)
         }
         onFilterChanged(name);
     }
+
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::setKeyframeValue(int parameterIndex, int keyframeIndex, double value)
 {
+    LOG_DEBUG() << "BEGIN";
     if (!m_filter) {
         LOG_ERROR() << "Invalid Filter" << parameterIndex;
         return;
@@ -531,11 +570,14 @@ void KeyframesModel::setKeyframeValue(int parameterIndex, int keyframeIndex, dou
     emit dataChanged(modelIndex, modelIndex, QVector<int>() << NumericValueRole << NameRole);
     emit dataChanged(index(parameterIndex), index(parameterIndex),
                      QVector<int>() << LowestValueRole << HighestValueRole);
+
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::setKeyframeValuePosition(int parameterIndex, int keyframeIndex, double value,
                                               int position)
 {
+    LOG_DEBUG() << "BEGIN";
     if (!m_filter) {
         LOG_ERROR() << "Invalid Filter" << parameterIndex;
         return;
@@ -594,10 +636,13 @@ void KeyframesModel::setKeyframeValuePosition(int parameterIndex, int keyframeIn
     emit dataChanged(modelIndex, modelIndex, roles);
     emit dataChanged(index(parameterIndex), index(parameterIndex),
                      QVector<int>() << LowestValueRole << HighestValueRole);
+
+    LOG_DEBUG() << "END";
 }
 
 bool KeyframesModel::isKeyframe(int parameterIndex, int position)
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_filter && parameterIndex < m_propertyNames.count()) {
         QString name = m_propertyNames[parameterIndex];
         Mlt::Animation anim = m_filter->getAnimation(name);
@@ -608,17 +653,21 @@ bool KeyframesModel::isKeyframe(int parameterIndex, int position)
 
 bool KeyframesModel::advancedKeyframesInUse()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_filter && m_metadata && m_filter->animateIn() <= 0 && m_filter->animateOut() <= 0)
         for (int i = 0; i < m_metadata->keyframes()->parameterCount(); i++) {
             if (m_filter->keyframeCount(m_metadata->keyframes()->parameter(i)->property()) > 0) {
                 return true;
             }
         }
+
+    LOG_DEBUG() << "END";
     return false;
 }
 
 void KeyframesModel::removeAdvancedKeyframes()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_filter && m_metadata && m_filter->animateIn() <= 0 && m_filter->animateOut() <= 0) {
         for (int i = 0; i < m_metadata->keyframes()->parameterCount(); i++) {
             QString name = m_metadata->keyframes()->parameter(i)->property();
@@ -631,15 +680,19 @@ void KeyframesModel::removeAdvancedKeyframes()
         }
         reload();
     }
+
+    LOG_DEBUG() << "END";
 }
 
 bool KeyframesModel::simpleKeyframesInUse()
 {
+    LOG_DEBUG() << "BEGIN";
     return m_filter && m_metadata && (m_filter->animateIn() > 0 || m_filter->animateOut() > 0);
 }
 
 void KeyframesModel::removeSimpleKeyframes()
 {
+    LOG_DEBUG() << "BEGIN";
     if (simpleKeyframesInUse()) {
         for (int i = 0; i < m_metadata->keyframes()->parameterCount(); i++) {
             QString name = m_metadata->keyframes()->parameter(i)->property();
@@ -691,10 +744,13 @@ void KeyframesModel::removeSimpleKeyframes()
         }
         m_filter->clearAnimateInOut();
     }
+
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::reload()
 {
+    LOG_DEBUG() << "BEGIN";
     beginResetModel();
     m_propertyNames.clear();
     m_keyframeCounts.clear();
@@ -708,13 +764,16 @@ void KeyframesModel::reload()
             }
         }
     endResetModel();
+
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::onFilterChanged(const QString &property)
 {
+    LOG_DEBUG() << "BEGIN";
     bool isKeyframeProperty = false;
     for (int p = 0; p < m_metadata->keyframes()->parameterCount() && isKeyframeProperty == false; p++) {
-        if (m_metadata->keyframes()->parameter(p)->property() == property) {
+        if (m_metadata->keyframes()-  >parameter(p)->property() == property) {
             isKeyframeProperty = true;
             break;
         }
@@ -751,42 +810,53 @@ void KeyframesModel::onFilterChanged(const QString &property)
         emit dataChanged(index(0, 0, index(i)), index(m_keyframeCounts[i] - 1, 0, index(i)),
                          QVector<int>() << NumericValueRole);
     }
+
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::onFilterInChanged(int /*delta*/)
 {
+    LOG_DEBUG() << "BEGIN";
     QTimer::singleShot(0, this, SLOT(reload()));
+    LOG_DEBUG() << "END";
 }
 
 
 void KeyframesModel::trimFilterIn(int in)
 {
+    LOG_DEBUG() << "BEGIN";
     Mlt::Service &service = m_filter->service();
     if (service.is_valid() && service.type() == mlt_service_filter_type) {
         Mlt::Filter filter = service;
         MLT.adjustFilter(&filter, filter.get_in(), filter.get_out(), in - filter.get_in(), 0);
     }
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::trimFilterOut(int out)
 {
+    LOG_DEBUG() << "BEGIN";
     Mlt::Service &service = m_filter->service();
     if (service.is_valid() && service.type() == mlt_service_filter_type) {
         Mlt::Filter filter = service;
         MLT.adjustFilter(&filter, filter.get_in(), filter.get_out(), 0, filter.get_out() - out);
     }
+    LOG_DEBUG() << "END";
 }
 
 int KeyframesModel::keyframeCount(int index) const
 {
+    LOG_DEBUG() << "BEGIN";
     if (index < m_propertyNames.count())
         return qMax(const_cast<QmlFilter *>(m_filter)->keyframeCount(m_propertyNames[index]), 0);
     else
         return 0;
+    LOG_DEBUG() << "END";
 }
 
 void KeyframesModel::updateNeighborsMinMax(int parameterIndex, int keyframeIndex)
 {
+    LOG_DEBUG() << "BEGIN";
     QModelIndex modelIndex;
     if (keyframeIndex > 0) {
         modelIndex = index(keyframeIndex - 1, 0, index(parameterIndex));
@@ -796,4 +866,5 @@ void KeyframesModel::updateNeighborsMinMax(int parameterIndex, int keyframeIndex
         modelIndex = index(keyframeIndex + 1, 0, index(parameterIndex));
         emit dataChanged(modelIndex, modelIndex, QVector<int>() << MinimumFrameRole);
     }
+    LOG_DEBUG() << "END";
 }

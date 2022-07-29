@@ -278,19 +278,24 @@ void MarkersDock::setModel(MarkersModel *model)
     connect(m_treeView->header(), SIGNAL(sortIndicatorChanged(int, Qt::SortOrder)), this,
             SLOT(onSortIndicatorChanged(int, Qt::SortOrder)));
     m_treeView->blockSelectionEvent(false);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onMarkerSelectionRequest(int markerIndex)
 {
+    LOG_INFO() << "begin";
     QModelIndex sourceIndex = m_model->modelIndexForRow(markerIndex);
     QModelIndex insertedIndex = m_proxyModel->mapFromSource(sourceIndex);
     if (insertedIndex.isValid()) {
         m_treeView->setCurrentIndex(insertedIndex);
     }
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onSelectionChanged(QModelIndex &index)
 {
+
+    LOG_INFO() << "begin";
     if (m_model && m_proxyModel && MAIN.multitrack() && index.isValid()) {
         QModelIndex realIndex = m_proxyModel->mapToSource(index);
         if (realIndex.isValid()) {
@@ -305,10 +310,13 @@ void MarkersDock::onSelectionChanged(QModelIndex &index)
     }
     m_editMarkerWidget->setVisible(false);
     enableButtons(false);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onRowClicked(const QModelIndex &index)
 {
+
+    LOG_INFO() << "begin";
     if (m_model && m_proxyModel && MAIN.multitrack() && index.isValid()) {
         QModelIndex realIndex = m_proxyModel->mapToSource(index);
         if (realIndex.isValid()) {
@@ -316,15 +324,21 @@ void MarkersDock::onRowClicked(const QModelIndex &index)
             emit seekRequested(marker.start);
         }
     }
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onAddRequested()
 {
+
+    LOG_INFO() << "begin";
     emit addRequested();
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onRemoveRequested()
 {
+
+    LOG_INFO() << "begin";
     if (m_model && m_proxyModel) {
         QModelIndexList indices = m_treeView->selectedIndexes();
         if (indices.size() > 0) {
@@ -334,68 +348,90 @@ void MarkersDock::onRemoveRequested()
             }
         }
     }
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onClearSelectionRequested()
 {
+
+    LOG_INFO() << "begin";
     m_treeView->clearSelection();
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onRemoveAllRequested()
 {
+
+    LOG_INFO() << "begin";
     m_model->clear();
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onSearchChanged()
 {
+    LOG_INFO() << "begin";
     if (m_proxyModel) {
         m_proxyModel->setFilterRegExp(QRegExp(m_searchField->text(), Qt::CaseInsensitive,
                                               QRegExp::FixedString));
     }
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onColorColumnToggled(bool checked)
 {
+    LOG_INFO() << "begin";
     Settings.setMarkersShowColumn("color", checked);
     m_treeView->setColumnHidden(0, !checked);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onTextColumnToggled(bool checked)
 {
+    LOG_INFO() << "begin";
     Settings.setMarkersShowColumn("text", checked);
     m_treeView->setColumnHidden(1, !checked);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onStartColumnToggled(bool checked)
 {
+    LOG_INFO() << "begin";
     Settings.setMarkersShowColumn("start", checked);
     m_treeView->setColumnHidden(2, !checked);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onEndColumnToggled(bool checked)
 {
+    LOG_INFO() << "begin";
     Settings.setMarkersShowColumn("end", checked);
     m_treeView->setColumnHidden(3, !checked);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onDurationColumnToggled(bool checked)
 {
+    LOG_INFO() << "begin";
     Settings.setMarkersShowColumn("duration", checked);
     m_treeView->setColumnHidden(4, !checked);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onRowsInserted(const QModelIndex &parent, int first, int last)
 {
+    LOG_INFO() << "begin";
     Q_UNUSED(parent);
     Q_UNUSED(last);
     QModelIndex sourceIndex = m_model->modelIndexForRow(first);
     QModelIndex insertedIndex = m_proxyModel->mapFromSource(sourceIndex);
     m_treeView->setCurrentIndex(insertedIndex);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
                                 const QVector<int> &roles)
 {
+    LOG_INFO() << "begin";
     Q_UNUSED(topLeft);
     Q_UNUSED(bottomRight);
     Q_UNUSED(roles);
@@ -413,10 +449,12 @@ void MarkersDock::onDataChanged(const QModelIndex &topLeft, const QModelIndex &b
             }
         }
     }
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onValuesChanged()
 {
+    LOG_INFO() << "begin";
     if (m_model && m_proxyModel) {
         QModelIndexList indices = m_treeView->selectedIndexes();
         if (indices.size() > 0) {
@@ -433,21 +471,27 @@ void MarkersDock::onValuesChanged()
             }
         }
     }
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onModelReset()
 {
+    LOG_INFO() << "begin";
     m_treeView->clearSelection();
     m_editMarkerWidget->setVisible(false);
+    LOG_INFO() << "end";
 }
 
 void MarkersDock::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order)
 {
+    LOG_INFO() << "begin";
     Settings.setMarkerSort(logicalIndex, order);
 }
 
 void MarkersDock::enableButtons(bool enable)
 {
+    LOG_INFO() << "begin";
     m_removeButton->setEnabled(enable);
     m_clearButton->setEnabled(enable);
+    LOG_INFO() << "end";
 }

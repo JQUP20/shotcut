@@ -461,7 +461,7 @@ void MainWindow::setupAndConnectDocks()
     m_filtersDock->hide();
     m_filtersDock->toggleViewAction()->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_6));
     ui->menuView->addAction(m_filtersDock->toggleViewAction());
-    connect(m_filtersDock, SIGNAL(currentFilterRequested(int)), m_filterController,
+    connect(m_filtersDock, SIGNAL(currentFilterRequested(int)),     m_filterController,
             SLOT(setCurrentFilter(int)), Qt::QueuedConnection);
     connect(m_filtersDock->toggleViewAction(), SIGNAL(triggered(bool)), this,
             SLOT(onFiltersDockTriggered(bool)));
@@ -1633,10 +1633,14 @@ void MainWindow::openMultiple(const QStringList &paths)
     } else if (!paths.isEmpty()) {
         open(paths.first());
     }
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::openMultiple(const QList<QUrl> &urls)
 {
+    LOG_DEBUG() << "begin";
+
     if (urls.size() > 1) {
         m_multipleFiles = Util::sortedFileList(Util::expandDirectories(urls));
         open(m_multipleFiles.first());
@@ -1645,10 +1649,15 @@ void MainWindow::openMultiple(const QList<QUrl> &urls)
         if (!open(Util::removeFileScheme(url)))
             open(Util::removeFileScheme(url, false));
     }
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::openVideo()
 {
+    LOG_DEBUG() << "begin";
+
     QString path = Settings.openPath();
 #ifdef Q_OS_MAC
     path.append("/*");
@@ -1667,18 +1676,29 @@ void MainWindow::openVideo()
         // If file invalid, then on some platforms the dialog messes up SDL.
         MLT.onWindowResize();
         activateWindow();
+
+
     }
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::openCut(Mlt::Producer *producer, bool play)
 {
+    LOG_DEBUG() << "begin";
+
     m_player->setPauseAfterOpen(!play);
     open(producer);
     MLT.seek(producer->get_in());
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::hideProducer()
 {
+    LOG_DEBUG() << "begin";
+
     // This is a hack to release references to the old producer, but it
     // probably leaves a reference to the new color producer somewhere not
     // yet identified (root cause).
@@ -1695,6 +1715,9 @@ void MainWindow::hideProducer()
     m_player->reset();
 
     QCoreApplication::processEvents();
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::closeProducer()
@@ -1707,30 +1730,41 @@ void MainWindow::closeProducer()
 
 void MainWindow::showStatusMessage(QAction *action, int timeoutSeconds)
 {
+    LOG_DEBUG() << "begin";
     // This object takes ownership of the passed action.
     // This version does not currently log its message.
     m_statusBarAction.reset(action);
     action->setParent(nullptr);
     m_player->setStatusLabel(action->text(), timeoutSeconds, action);
+    LOG_DEBUG() << "end";
 }
 
 void MainWindow::showStatusMessage(const QString &message, int timeoutSeconds,
                                    QPalette::ColorRole role)
 {
+    LOG_DEBUG() << "begin";
     LOG_INFO() << message;
     auto action = new QAction;
     connect(action, SIGNAL(triggered()), this, SLOT(onStatusMessageClicked()));
     m_statusBarAction.reset(action);
     m_player->setStatusLabel(message, timeoutSeconds, action, role);
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::onStatusMessageClicked()
 {
+    LOG_DEBUG() << "begin";
+
     showStatusMessage(QString(), 0);
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::seekPlaylist(int start)
 {
+    LOG_INFO() << "void MainWindow::seekPlaylist(int start) start";
     if (!playlist()) return;
     // we bypass this->open() to prevent sending producerOpened signal to self, which causes to reload playlist
     if (!MLT.producer()
@@ -1747,10 +1781,12 @@ void MainWindow::seekPlaylist(int start)
     MLT.seek(start);
     m_player->setFocus();
     m_player->switchToTab(Player::ProjectTabIndex);
+    LOG_INFO() << "void MainWindow::seekPlaylist(int start) end";
 }
 
 void MainWindow::seekTimeline(int position, bool seekPlayer)
 {
+    LOG_INFO() << "void MainWindow::seekTimeline(int position, bool seekPlayer) start";
     if (!multitrack()) return;
     // we bypass this->open() to prevent sending producerOpened signal to self, which causes to reload playlist
     if (MLT.producer()
@@ -1772,11 +1808,14 @@ void MainWindow::seekTimeline(int position, bool seekPlayer)
         m_player->seek(position);
     else
         m_player->pause();
+    LOG_INFO() << "void MainWindow::seekTimeline(int position, bool seekPlayer) end";
 }
 
 void MainWindow::seekKeyframes(int position)
 {
+    LOG_INFO() << "void MainWindow::seekKeyframes(int position) start";
     m_player->seek(position);
+    LOG_INFO() << "void MainWindow::seekKeyframes(int position) end";
 }
 
 void MainWindow::readPlayerSettings()
@@ -3095,113 +3134,143 @@ void MainWindow::onEncodeTriggered(bool checked)
 
 void MainWindow::onCaptureStateChanged(bool started)
 {
+    LOG_INFO() << "begin";
     if (started && (MLT.resource().startsWith("x11grab:") ||
                     MLT.resource().startsWith("gdigrab:") ||
                     MLT.resource().startsWith("avfoundation"))
             && !MLT.producer()->get_int(kBackgroundCaptureProperty))
         showMinimized();
+    LOG_INFO() << "end";
 }
 
 void MainWindow::onJobsDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onJobsDockTriggered(bool checked) begin";
     if (checked) {
         m_jobsDock->show();
         m_jobsDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onJobsDockTriggered(bool checked) end";
 }
 
 void MainWindow::onRecentDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onRecentDockTriggered(bool checked) begin";
     if (checked) {
         m_recentDock->show();
         m_recentDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onRecentDockTriggered(bool checked) end";
 }
 
 void MainWindow::onPropertiesDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onPropertiesDockTriggered(bool checked) begin";
     if (checked) {
         m_propertiesDock->show();
         m_propertiesDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onPropertiesDockTriggered(bool checked) end";
 }
 
 void MainWindow::onPlaylistDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onPlaylistDockTriggered(bool checked) begin";
     if (checked) {
         m_playlistDock->show();
         m_playlistDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onPlaylistDockTriggered(bool checked) end";
 }
 
 void MainWindow::onTimelineDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onTimelineDockTriggered(bool checked) begin";
     if (checked) {
         m_timelineDock->show();
         m_timelineDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onTimelineDockTriggered(bool checked) end";
 }
 
 void MainWindow::onHistoryDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onHistoryDockTriggered(bool checked) begin";
     if (checked) {
         m_historyDock->show();
         m_historyDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onHistoryDockTriggered(bool checked) end";
 }
 
 void MainWindow::onFiltersDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onFiltersDockTriggered(bool checked) begin";
     if (checked) {
         m_filtersDock->show();
         m_filtersDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onFiltersDockTriggered(bool checked) end";
 }
 
 void MainWindow::onKeyframesDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onKeyframesDockTriggered(bool checked) begin";
     if (checked) {
         m_keyframesDock->show();
         m_keyframesDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onKeyframesDockTriggered(bool checked) end";
 }
 
 void MainWindow::onMarkersDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onMarkersDockTriggered(bool checked) begin";
     if (checked) {
         m_markersDock->show();
         m_markersDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onMarkersDockTriggered(bool checked) end";
 }
 
 void MainWindow::onNotesDockTriggered(bool checked)
 {
+    LOG_INFO() << "void MainWindow::onNotesDockTriggered(bool checked) begin";
     if (checked) {
         m_notesDock->show();
         m_notesDock->raise();
     }
+    LOG_INFO() << "void MainWindow::onNotesDockTriggered(bool checked) end";
 }
 
 void MainWindow::onPlaylistCreated()
 {
+    LOG_INFO() << "void MainWindow::onPlaylistCreated() begin";
     if (!playlist() || playlist()->count() == 0) return;
     m_player->enableTab(Player::ProjectTabIndex, true);
+    LOG_INFO() << "void MainWindow::onPlaylistCreated() end";
 }
 
 void MainWindow::onPlaylistLoaded()
 {
+    LOG_INFO() << "void MainWindow::onPlaylistLoaded() begin";
     updateMarkers();
     m_player->enableTab(Player::ProjectTabIndex, true);
+    LOG_INFO() << "void MainWindow::onPlaylistLoaded() end";
 }
 
 void MainWindow::onPlaylistCleared()
 {
+    LOG_INFO() << "void MainWindow::onPlaylistCleared() begin";
     m_player->onTabBarClicked(Player::SourceTabIndex);
     setWindowModified(true);
+    LOG_INFO() << "void MainWindow::onPlaylistCleared()end";
 }
 
 void MainWindow::onPlaylistClosed()
 {
+    LOG_DEBUG() << "begin";
+
     closeProducer();
     setProfile(Settings.playerProfile());
     resetVideoModeMenu();
@@ -3215,25 +3284,38 @@ void MainWindow::onPlaylistClosed()
     m_autosaveFile.reset(new AutoSaveFile(untitledFileName()));
     if (!isMultitrackValid())
         m_player->enableTab(Player::ProjectTabIndex, false);
+    LOG_DEBUG() << "end";
 }
 
 void MainWindow::onPlaylistModified()
 {
+    LOG_DEBUG() << "begin";
+
     setWindowModified(true);
     if (MLT.producer() && playlist()
             && (void *) MLT.producer()->get_producer() == (void *) playlist()->get_playlist())
         m_player->onDurationChanged();
     updateMarkers();
     m_player->enableTab(Player::ProjectTabIndex, true);
+
+    LOG_DEBUG() << end";
+
 }
 
 void MainWindow::onMultitrackCreated()
 {
+    LOG_DEBUG() << "begin";
+
     m_player->enableTab(Player::ProjectTabIndex, true);
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::onMultitrackClosed()
 {
+    LOG_DEBUG() << "begin";
+
     setAudioChannels(Settings.playerAudioChannels());
     closeProducer();
     setProfile(Settings.playerProfile());
@@ -3247,10 +3329,17 @@ void MainWindow::onMultitrackClosed()
     m_autosaveFile.reset(new AutoSaveFile(untitledFileName()));
     if (!playlist() || playlist()->count() == 0)
         m_player->enableTab(Player::ProjectTabIndex, false);
+   
+    
+    LOG_DEBUG() << "end";
+
+
 }
 
 void MainWindow::onMultitrackModified()
 {
+    LOG_DEBUG() << "begin";
+
     setWindowModified(true);
 
     // Reflect this playlist info onto the producer for keyframes dock.
@@ -3289,18 +3378,29 @@ void MainWindow::onMultitrackModified()
         }
     }
     MLT.refreshConsumer();
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::onMultitrackDurationChanged()
 {
+    LOG_DEBUG() << "begin";
+
     if (MLT.producer()
             && (void *) MLT.producer()->get_producer() == (void *) multitrack()->get_producer())
         m_player->onDurationChanged();
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::onNoteModified()
 {
+    LOG_DEBUG() << "begin";
+
     setWindowModified(true);
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::onCutModified()
@@ -3317,21 +3417,32 @@ void MainWindow::onCutModified()
 
 void MainWindow::onProducerModified()
 {
+    LOG_DEBUG() << "begin";
+
     setWindowModified(true);
     sourceUpdated();
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::onFilterModelChanged()
 {
+    LOG_DEBUG() << "begin";
+
     MLT.refreshConsumer();
     setWindowModified(true);
     sourceUpdated();
     if (playlist())
         m_playlistDock->setUpdateButtonEnabled(true);
+
+    LOG_DEBUG() << "end";
 }
 
 void MainWindow::updateMarkers()
 {
+    LOG_DEBUG() << "begin";
+
     if (playlist() && MLT.isPlaylist()) {
         QList<int> markers;
         int n = playlist()->count();
@@ -3339,34 +3450,64 @@ void MainWindow::updateMarkers()
             markers.append(playlist()->clip_start(i));
         m_player->setMarkers(markers);
     }
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::updateThumbnails()
 {
+    LOG_DEBUG() << "begin";
+
     if (Settings.playlistThumbnails() != "hidden")
         m_playlistDock->model()->refreshThumbnails();
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::on_actionUndo_triggered()
 {
+    LOG_DEBUG() << "begin";
+
+
     TimelineSelectionBlocker blocker(*m_timelineDock);
     m_undoStack->undo();
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::on_actionRedo_triggered()
 {
+    LOG_DEBUG() << "begin";
+
+
     TimelineSelectionBlocker blocker(*m_timelineDock);
     m_undoStack->redo();
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::on_actionFAQ_triggered()
 {
+    LOG_DEBUG() << "begin";
+
     QDesktopServices::openUrl(QUrl("https://www.shotcut.org/FAQ/"));
+
+    LOG_DEBUG() << "end";
+
 }
 
 void MainWindow::on_actionForum_triggered()
 {
+    LOG_DEBUG() << "begin";
+
     QDesktopServices::openUrl(QUrl("https://forum.shotcut.org/"));
+
+    LOG_DEBUG() << "end";
+
 }
 
 bool MainWindow::saveXML(const QString &filename, bool withRelativePaths)
@@ -3437,24 +3578,38 @@ void MainWindow::changeTheme(const QString &theme)
 
 Mlt::Playlist *MainWindow::playlist() const
 {
+    LOG_DEBUG() << "begin";
+
     return m_playlistDock->model()->playlist();
+    LOG_DEBUG() << "end";
+
 }
 
 bool MainWindow::isPlaylistValid() const
 {
+    LOG_DEBUG() << "begin";
+
     return m_playlistDock->model()->playlist()
            && m_playlistDock->model()->rowCount() > 0;
+    LOG_DEBUG() << "end";
+
 }
 
 Mlt::Producer *MainWindow::multitrack() const
 {
+    LOG_DEBUG() << "begin";
+
     return m_timelineDock->model()->tractor();
+    LOG_DEBUG() << "end";
+
 }
 
 bool MainWindow::isMultitrackValid() const
 {
+    LOG_DEBUG() << "begin";
     return m_timelineDock->model()->tractor()
            && !m_timelineDock->model()->trackList().empty();
+    LOG_DEBUG() << "end";
 }
 
 QWidget *MainWindow::loadProducerWidget(Mlt::Producer *producer)
@@ -3980,14 +4135,17 @@ void MainWindow::onProfileTriggered(QAction *action)
 
 void MainWindow::onProfileChanged()
 {
+    LOG_INFO() << "begin";
     if (multitrack() && MLT.isMultitrack() &&
             (m_timelineDock->selection().isEmpty() || m_timelineDock->currentTrack() == -1)) {
         emit m_timelineDock->selected(multitrack());
     }
+    LOG_INFO() << "end";
 }
 
 void MainWindow::on_actionAddCustomProfile_triggered()
 {
+    LOG_INFO() << "begin";
     QString xml;
     if (MLT.producer() && MLT.producer()->is_valid()) {
         // Save the XML to get correct in/out points before profile is changed.
@@ -4008,7 +4166,9 @@ void MainWindow::on_actionAddCustomProfile_triggered()
             MLT.restart(xml);
             emit producerOpened(false);
         }
+
     }
+    LOG_INFO() << "end";
 }
 
 void MainWindow::restartAfterChangeTheme()

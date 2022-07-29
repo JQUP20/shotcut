@@ -45,16 +45,19 @@ VideoVectorScopeWidget::VideoVectorScopeWidget()
 
 VideoVectorScopeWidget::~VideoVectorScopeWidget()
 {
+    LOG_DEBUG() << "begin";
     disconnect(&QmlProfile::singleton(), SIGNAL(profileChanged()), this, SLOT(profileChanged()));
 }
 
 QString VideoVectorScopeWidget::getTitle()
 {
+    LOG_DEBUG() << "begin";
     return tr("Video Vector");
 }
 
 void VideoVectorScopeWidget::refreshScope(const QSize &size, bool full)
 {
+    LOG_DEBUG() << "begin";
     Q_UNUSED(full)
 
     qreal side = qMin(size.width(), size.height());
@@ -149,10 +152,12 @@ void VideoVectorScopeWidget::refreshScope(const QSize &size, bool full)
         m_displayImg = m_graticuleImg.copy();
         m_mutex.unlock();
     }
+    LOG_DEBUG() << "end";
 }
 
 void VideoVectorScopeWidget::drawGraticuleLines(QPainter &p, qreal lineWidth)
 {
+    LOG_DEBUG() << "begin";
     QRadialGradient radialGradient(128.0, 128.0, 128.0);
     radialGradient.setColorAt(0.0, Qt::transparent);
     radialGradient.setColorAt(0.05, Qt::transparent);
@@ -167,10 +172,13 @@ void VideoVectorScopeWidget::drawGraticuleLines(QPainter &p, qreal lineWidth)
     p.drawLine(m_points[BLUE_100], m_points[YELLOW_100]);
     p.drawLine(m_points[CYAN_100], m_points[RED_100]);
     p.drawLine(m_points[GREEN_100], m_points[MAGENTA_100]);
+
+    LOG_DEBUG() << "end";
 }
 
 void VideoVectorScopeWidget::drawSkinToneLine(QPainter &p, qreal lineWidth)
 {
+    LOG_DEBUG() << "begin";
     // Draw a skin tone line 33 degrees counter clockwise from the red vector
     qreal angle = qRadiansToDegrees(qAtan((qreal)(m_points[RED_100].x() - 128) / (qreal)(
                                               m_points[RED_100].y() - 128)));
@@ -189,11 +197,13 @@ void VideoVectorScopeWidget::drawSkinToneLine(QPainter &p, qreal lineWidth)
     skinToneLine.setLength(120);
     skinToneLine.setAngle(angle);
     p.drawLine(skinToneLine);
+    LOG_DEBUG() << "end";
 }
 
 void VideoVectorScopeWidget::drawGraticuleMark(QPainter &p, const QPoint &point, QColor color,
                                                qreal lineWidth, qreal LineLength)
 {
+    LOG_DEBUG() << "begin";
     color = color.darker(100);
     p.setBrush(color);
     p.setPen(QPen(color, lineWidth, Qt::SolidLine, Qt::RoundCap));
@@ -206,10 +216,13 @@ void VideoVectorScopeWidget::drawGraticuleMark(QPainter &p, const QPoint &point,
     p.drawLine(angleline);
     angleline.setAngle(angle + 180);
     p.drawLine(angleline);
+
+    LOG_DEBUG() << "end";
 }
 
 void VideoVectorScopeWidget::paintEvent(QPaintEvent *)
 {
+    LOG_DEBUG() << "begin";
     if (!isVisible())
         return;
 
@@ -228,10 +241,12 @@ void VideoVectorScopeWidget::paintEvent(QPaintEvent *)
         p.fillRect(squareRect, QBrush(Qt::black, Qt::SolidPattern));
     }
     m_mutex.unlock();
+    LOG_DEBUG() << "end";
 }
 
 void VideoVectorScopeWidget::mouseMoveEvent(QMouseEvent *event)
 {
+    LOG_DEBUG() << "begin";
     QRectF squareRect = getCenteredSquare();
     if (!squareRect.contains(event->pos())) {
         QToolTip::hideText();
@@ -244,10 +259,13 @@ void VideoVectorScopeWidget::mouseMoveEvent(QMouseEvent *event)
     QString text =  QString(tr("U: %1\nV: %2")).arg(QString::number(qRound(u)),
                                                     QString::number(qRound(v)));
     QToolTip::showText(event->globalPos(), text);
+
+    LOG_DEBUG() << "end";
 }
 
 QRect VideoVectorScopeWidget::getCenteredSquare()
 {
+    LOG_DEBUG() << "begin";
     // Calculate the size. Vectorscope is always a square.
     QRect squareRect;
     if (width() > height()) {
@@ -257,11 +275,13 @@ QRect VideoVectorScopeWidget::getCenteredSquare()
         int y = (height() - width()) / 2;
         squareRect = QRect(0, y, width(), width());
     }
+    LOG_DEBUG() << "end";
     return squareRect;
 }
 
 void VideoVectorScopeWidget::profileChanged()
 {
+    LOG_DEBUG() << "begin";
     LOG_DEBUG() << MLT.profile().colorspace();
     m_mutex.lock();
     switch (MLT.profile().colorspace()) {
@@ -298,4 +318,5 @@ void VideoVectorScopeWidget::profileChanged()
     m_profileChanged = true;
     m_mutex.unlock();
     requestRefresh();
+    LOG_DEBUG() << "end";
 }

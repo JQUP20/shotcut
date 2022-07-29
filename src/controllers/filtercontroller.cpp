@@ -36,6 +36,7 @@ FilterController::FilterController(QObject *parent) : QObject(parent),
     m_attachedModel(this),
     m_currentFilterIndex(QmlFilter::NoCurrentFilter)
 {
+    LOG_DEBUG() << "BEGIN";
     startTimer(0);
     connect(&m_attachedModel, SIGNAL(changed()), this, SLOT(handleAttachedModelChange()));
     connect(&m_attachedModel, SIGNAL(modelAboutToBeReset()), this,
@@ -46,10 +47,12 @@ FilterController::FilterController(QObject *parent) : QObject(parent),
             SLOT(handleAttachedRowsInserted(const QModelIndex &, int, int)));
     connect(&m_attachedModel, SIGNAL(duplicateAddFailed(int)), this,
             SLOT(handleAttachDuplicateFailed(int)));
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::loadFilterMetadata()
 {
+    LOG_DEBUG() << "BEGIN";
     QScopedPointer<Mlt::Properties> mltFilters(MLT.repository()->filters());
     QScopedPointer<Mlt::Properties> mltLinks(MLT.repository()->links());
     QScopedPointer<Mlt::Properties> mltProducers(MLT.repository()->producers());
@@ -106,10 +109,12 @@ void FilterController::loadFilterMetadata()
             }
         }
     };
+    LOG_DEBUG() << "END";
 }
 
 QmlMetadata *FilterController::metadataForService(Mlt::Service *service)
 {
+    LOG_DEBUG() << "BEGIN";
     QmlMetadata *meta = 0;
     int rowCount = m_metadataModel.rowCount();
     QString uniqueId = service->get(kShotcutFilterProperty);
@@ -128,35 +133,47 @@ QmlMetadata *FilterController::metadataForService(Mlt::Service *service)
     }
 
     return meta;
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::timerEvent(QTimerEvent *event)
 {
+    LOG_DEBUG() << "BEGIN";
+
     loadFilterMetadata();
     killTimer(event->timerId());
+
+    LOG_DEBUG() << "END";
 }
 
 MetadataModel *FilterController::metadataModel()
 {
+    LOG_DEBUG() << "BEGIN";
     return &m_metadataModel;
+    LOG_DEBUG() << "END";
 }
 
 AttachedFiltersModel *FilterController::attachedModel()
 {
+    LOG_DEBUG() << "BEGIN";
     return &m_attachedModel;
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::setProducer(Mlt::Producer *producer)
 {
+    LOG_DEBUG() << "BEGIN";
     m_attachedModel.setProducer(producer);
     if (producer && producer->is_valid()) {
         m_metadataModel.setIsClipProducer(!MLT.isTrackProducer(*producer));
         m_metadataModel.setIsChainProducer(producer->type() == mlt_service_chain_type);
     }
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::setCurrentFilter(int attachedIndex, bool isNew)
 {
+    LOG_DEBUG() << "BEGIN";
     if (attachedIndex == m_currentFilterIndex) {
         return;
     }
@@ -185,96 +202,125 @@ void FilterController::setCurrentFilter(int attachedIndex, bool isNew)
 
     emit currentFilterChanged(filter, meta, m_currentFilterIndex);
     m_currentFilter.reset(filter);
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::onFadeInChanged()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_currentFilter) {
         emit m_currentFilter->changed();
         emit m_currentFilter->animateInChanged();
     }
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::onFadeOutChanged()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_currentFilter) {
         emit m_currentFilter->changed();
         emit m_currentFilter->animateOutChanged();
     }
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::onServiceInChanged(int delta, Mlt::Service *service)
 {
+    LOG_DEBUG() << "BEGIN";
     if (delta && m_currentFilter && (!service
                                      || m_currentFilter->service().get_service() == service->get_service())) {
         emit m_currentFilter->inChanged(delta);
     }
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::onServiceOutChanged(int delta, Mlt::Service *service)
 {
+    LOG_DEBUG() << "BEGIN";
     if (delta && m_currentFilter && (!service
                                      || m_currentFilter->service().get_service() == service->get_service())) {
         emit m_currentFilter->outChanged(delta);
     }
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::handleAttachedModelChange()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_currentFilter) {
         emit m_currentFilter->changed("disable");
     }
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::handleAttachedModelAboutToReset()
 {
+    LOG_DEBUG() << "BEGIN";
     setCurrentFilter(QmlFilter::NoCurrentFilter);
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::handleAttachedRowsRemoved(const QModelIndex &, int first, int)
 {
+    LOG_DEBUG() << "BEGIN";
     m_currentFilterIndex = QmlFilter::DeselectCurrentFilter; // Force update
     setCurrentFilter(qBound(0, first, m_attachedModel.rowCount() - 1));
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::handleAttachedRowsInserted(const QModelIndex &, int first, int)
 {
+    LOG_DEBUG() << "BEGIN";
     m_currentFilterIndex = QmlFilter::DeselectCurrentFilter; // Force update
     setCurrentFilter(qBound(0, first, m_attachedModel.rowCount() - 1), true);
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::handleAttachDuplicateFailed(int index)
 {
+    LOG_DEBUG() << "BEGIN";
     const QmlMetadata *meta = m_attachedModel.getMetadata(index);
     emit statusChanged(tr("Only one %1 filter is allowed.").arg(meta->name()));
     setCurrentFilter(index);
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::onQmlFilterChanged()
 {
+    LOG_DEBUG() << "BEGIN";
     emit filterChanged(m_mltService);
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::onQmlFilterChanged(const QString &name)
 {
+    LOG_DEBUG() << "BEGIN";
     if (name == "disable") {
         QModelIndex index = m_attachedModel.index(m_currentFilterIndex);
         emit m_attachedModel.dataChanged(index, index, QVector<int>() << Qt::CheckStateRole);
     }
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::removeCurrent()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_currentFilterIndex > QmlFilter::NoCurrentFilter)
         m_attachedModel.remove(m_currentFilterIndex);
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::onProducerChanged()
 {
+    LOG_DEBUG() << "BEGIN";
     emit m_attachedModel.trackTitleChanged();
+    LOG_DEBUG() << "END";
 }
 
 void FilterController::addMetadata(QmlMetadata *meta)
 {
+    LOG_DEBUG() << "BEGIN";
     m_metadataModel.add(meta);
+    LOG_DEBUG() << "END";
 }

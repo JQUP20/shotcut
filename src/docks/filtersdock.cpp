@@ -69,6 +69,7 @@ FiltersDock::FiltersDock(MetadataModel *metadataModel, AttachedFiltersModel *att
 
 void FiltersDock::setCurrentFilter(QmlFilter *filter, QmlMetadata *meta, int index)
 {
+    LOG_DEBUG() << "begin";
     if (filter && filter->producer().is_valid()) {
         m_producer.setProducer(filter->producer());
     } else {
@@ -82,11 +83,12 @@ void FiltersDock::setCurrentFilter(QmlFilter *filter, QmlMetadata *meta, int ind
     else
         disconnect(this, SIGNAL(changed()));
     QMetaObject::invokeMethod(m_qview.rootObject(), "setCurrentFilter", Q_ARG(QVariant,
-                                                                              QVariant(index)));
+        LOG_DEBUG() << "end";                                                                           QVariant(index)));
 }
 
 bool FiltersDock::event(QEvent *event)
 {
+    LOG_DEBUG() << "begin";
     bool result = QDockWidget::event(event);
     if (event->type() == QEvent::PaletteChange || event->type() == QEvent::StyleChange) {
         resetQview();
@@ -96,16 +98,19 @@ bool FiltersDock::event(QEvent *event)
 
 void FiltersDock::keyPressEvent(QKeyEvent *event)
 {
+    LOG_DEBUG() << "begin";
     QDockWidget::keyPressEvent(event);
     if (event->key() == Qt::Key_F) {
         event->ignore();
     } else if (event->key() == Qt::Key_Left || event->key() == Qt::Key_Right) {
         event->accept();
     }
+    LOG_DEBUG() << "end";
 }
 
 void FiltersDock::onSeeked(int position)
 {
+    LOG_DEBUG() << "begin";
     if (m_producer.producer().is_valid()) {
         if (MLT.isMultitrack()) {
             // Make the position relative to clip's position on a timeline track.
@@ -116,19 +121,24 @@ void FiltersDock::onSeeked(int position)
         }
         m_producer.seek(position);
     }
+    LOG_DEBUG() << "end";
 }
 
 void FiltersDock::onShowFrame(const SharedFrame &frame)
 {
+    LOG_DEBUG() << "begin";
     if (m_producer.producer().is_valid()) {
         int position = frame.get_position();
         onSeeked(position);
     }
+    LOG_DEBUG() << "end";
 }
 
 void FiltersDock::openFilterMenu() const
 {
+    LOG_DEBUG() << "begin";
     QMetaObject::invokeMethod(m_qview.rootObject(), "openFilterMenu");
+    LOG_DEBUG() << "end";
 }
 
 void FiltersDock::resetQview()
@@ -159,4 +169,6 @@ void FiltersDock::resetQview()
     QObject::connect(m_qview.rootObject(), SIGNAL(currentFilterRequested(int)),
                      SIGNAL(currentFilterRequested(int)));
     emit currentFilterRequested(QmlFilter::NoCurrentFilter);
+
+    LOG_DEBUG() << "end";
 }

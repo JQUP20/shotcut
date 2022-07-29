@@ -197,12 +197,15 @@ void GLWidget::initializeGL()
 
 void GLWidget::setBlankScene()
 {
+    LOG_DEBUG() << "BEGIN";
     setSource(QmlUtilities::blankVui());
     m_savedQmlSource.clear();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::resizeGL(int width, int height)
 {
+    LOG_DEBUG() << "BEGIN";
     double x, y, w, h;
     double this_aspect = (double) width / height;
     double video_aspect = profile().dar();
@@ -225,16 +228,20 @@ void GLWidget::resizeGL(int width, int height)
     y = (height - h) / 2.0;
     m_rect.setRect(x, y, w, h);
     emit rectChanged();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::resizeEvent(QResizeEvent *event)
 {
+    LOG_DEBUG() << "BEGIN";
     QQuickWidget::resizeEvent(event);
     resizeGL(event->size().width(), event->size().height());
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::createShader()
 {
+    LOG_DEBUG() << "BEGIN";
     m_shader = new QOpenGLShaderProgram;
     m_shader->addShaderFromSourceCode(QOpenGLShader::Vertex,
                                       "uniform highp mat4 projection;"
@@ -289,10 +296,13 @@ void GLWidget::createShader()
     m_modelViewLocation = m_shader->uniformLocation("modelView");
     m_vertexLocation = m_shader->attributeLocation("vertex");
     m_texCoordLocation = m_shader->attributeLocation("texCoord");
+
+    LOG_DEBUG() << "END";
 }
 
 static void uploadTextures(QOpenGLContext *context, SharedFrame &frame, GLuint texture[])
 {
+    LOG_DEBUG() << "BEGIN";
     int width = frame.get_image_width();
     int height = frame.get_image_height();
     const uint8_t *image = frame.get_image(mlt_image_yuv420p);
@@ -349,10 +359,12 @@ static void uploadTextures(QOpenGLContext *context, SharedFrame &frame, GLuint t
     f->glTexImage2D   (GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0,
                        GL_LUMINANCE, GL_UNSIGNED_BYTE, image + width * height + width / 2 * height / 2);
     check_error(f);
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::paintGL()
 {
+    LOG_DEBUG() << "BEGIN";
 #ifndef QT_NO_DEBUG
     QOpenGLFunctions *f = quickWindow()->openglContext()->functions();
 #endif
@@ -475,26 +487,32 @@ void GLWidget::paintGL()
         check_error(f);
         m_mutex.unlock();
     }
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::onRefreshTimeout()
 {
+    LOG_DEBUG() << "BEGIN";
     Controller::refreshConsumer(m_scrubAudio);
     m_scrubAudio = false;
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
+    LOG_DEBUG() << "BEGIN";
     QQuickWidget::mousePressEvent(event);
     if (event->isAccepted()) return;
     if (event->button() == Qt::LeftButton)
         m_dragStart = event->pos();
     if (MLT.isClip())
         emit dragStarted();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
+    LOG_DEBUG() << "BEGIN";
     QQuickWidget::mouseMoveEvent(event);
     if (event->isAccepted()) return;
     if (event->modifiers() == (Qt::ShiftModifier | Qt::AltModifier) && m_producer) {
@@ -532,25 +550,31 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     }
     drag->setHotSpot(QPoint(0, 0));
     drag->exec(Qt::LinkAction);
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
+    LOG_DEBUG() << "BEGIN";
     QQuickWidget::keyPressEvent(event);
     if (event->isAccepted()) return;
     MAIN.keyPressEvent(event);
+    LOG_DEBUG() << "END";
 }
 
 bool GLWidget::event(QEvent *event)
 {
+    LOG_DEBUG() << "BEGIN";
     bool result = QQuickWidget::event(event);
     if (event->type() == QEvent::PaletteChange && m_sharedFrame.is_valid())
         onFrameDisplayed(m_sharedFrame);
+    LOG_DEBUG() << "END";
     return result;
 }
 
 void GLWidget::createThread(RenderThread **thread, thread_function_t function, void *data)
 {
+    LOG_DEBUG() << "BEGIN";
 #ifdef Q_OS_WIN
     // On Windows, MLT event consumer-thread-create is fired from the Qt main thread.
     while (!m_isInitialized)
@@ -562,20 +586,24 @@ void GLWidget::createThread(RenderThread **thread, thread_function_t function, v
 #endif
     (*thread) = new RenderThread(function, data, m_shareContext, &m_offscreenSurface);
     (*thread)->start();
+    LOG_DEBUG() << "END";
 }
 
 static void onThreadCreate(mlt_properties owner, GLWidget *self, mlt_event_data data)
 {
+    LOG_DEBUG() << "BEGIN";
     Q_UNUSED(owner)
     auto threadData = (mlt_event_data_thread *) Mlt::EventData(data).to_object();
     if (threadData) {
         auto renderThread = (RenderThread *) threadData->thread;
         self->createThread(&renderThread, threadData->function, threadData->data);
     }
+    LOG_DEBUG() << "END";
 }
 
 static void onThreadJoin(mlt_properties owner, GLWidget *self, mlt_event_data data)
 {
+    LOG_DEBUG() << "BEGIN";
     Q_UNUSED(owner)
     Q_UNUSED(self)
     auto threadData = (mlt_event_data_thread *) Mlt::EventData(data).to_object();
@@ -587,10 +615,12 @@ static void onThreadJoin(mlt_properties owner, GLWidget *self, mlt_event_data da
             delete renderThread;
         }
     }
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::startGlsl()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_glslManager) {
         m_glslManager->fire_event("init glsl");
         if (!m_glslManager->get_int("glsl_supported")) {
@@ -603,32 +633,40 @@ void GLWidget::startGlsl()
             emit started();
         }
     }
+    LOG_DEBUG() << "END";
 }
 
 static void onThreadStarted(mlt_properties owner, GLWidget *self)
 {
+    LOG_DEBUG() << "BEGIN";
     Q_UNUSED(owner)
     self->startGlsl();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::stopGlsl()
 {
+    LOG_DEBUG() << "BEGIN";
     //TODO This is commented out for now because it is causing crashes.
     //Technically, this should be the correct thing to do, but it appears
     //some changes in the 15.01 and 15.03 releases have created regression
     //with respect to restarting the consumer in GPU mode.
 //    m_glslManager->fire_event("close glsl");
     m_texture[0] = 0;
+    LOG_DEBUG() << "END";
 }
 
 static void onThreadStopped(mlt_properties owner, GLWidget *self)
 {
+    LOG_DEBUG() << "BEGIN";
     Q_UNUSED(owner)
     self->stopGlsl();
+    LOG_DEBUG() << "END";
 }
 
 int GLWidget::setProducer(Mlt::Producer *producer, bool isMulti)
 {
+    LOG_DEBUG() << "BEGIN";
     int error = Controller::setProducer(producer, isMulti);
 
     if (!error) {
@@ -638,11 +676,13 @@ int GLWidget::setProducer(Mlt::Producer *producer, bool isMulti)
             resizeGL(width(), height());
         }
     }
+    LOG_DEBUG() << "END";
     return error;
 }
 
 int GLWidget::reconfigure(bool isMulti)
 {
+    LOG_DEBUG() << "BEGIN";
     int error = 0;
 
     // use SDL for audio, OpenGL for video
@@ -729,28 +769,34 @@ int GLWidget::reconfigure(bool isMulti)
         Controller::closeConsumer();
         Controller::close();
     }
+    LOG_DEBUG() << "END";
     return error;
 }
 
 void GLWidget::refreshConsumer(bool scrubAudio)
 {
+    LOG_DEBUG() << "BEGIN";
     scrubAudio |= isPaused() ? scrubAudio : Settings.playerScrubAudio();
     m_scrubAudio |= scrubAudio;
     m_refreshTimer.start();
+    LOG_DEBUG() << "END";
 }
 
 QPoint GLWidget::offset() const
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_zoom == 0.0) {
         return QPoint(0, 0);
     } else {
         return QPoint(m_offset.x() - (MLT.profile().width()  * m_zoom -  width()) / 2,
                       m_offset.y() - (MLT.profile().height() * m_zoom - height()) / 2);
     }
+    LOG_DEBUG() << "END";
 }
 
 QImage GLWidget::image() const
 {
+    LOG_DEBUG() << "BEGIN";
     if (Settings.playerGPU()) {
         return m_frameRenderer->image();
     }
@@ -764,11 +810,14 @@ QImage GLWidget::image() const
             return temp.copy();
         }
     }
+
+    LOG_DEBUG() << "END";
     return QImage();
 }
 
 bool GLWidget::imageIsProxy() const
 {
+    LOG_DEBUG() << "BEGIN";
     bool isProxy = false;
     SharedFrame frame = m_frameRenderer->getDisplayFrame();
     if (frame.is_valid()) {
@@ -778,16 +827,21 @@ bool GLWidget::imageIsProxy() const
         }
         delete frameProducer;
     }
+
+    LOG_DEBUG() << "END";
     return isProxy;
 }
 
 void GLWidget::requestImage() const
 {
+    LOG_DEBUG() << "BEGIN";
     m_frameRenderer->requestImage();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::onFrameDisplayed(const SharedFrame &frame)
 {
+    LOG_DEBUG() << "BEGIN";
     m_mutex.lock();
     m_sharedFrame = frame;
     m_mutex.unlock();
@@ -799,40 +853,50 @@ void GLWidget::onFrameDisplayed(const SharedFrame &frame)
         setSource(m_savedQmlSource);
     }
     quickWindow()->update();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::setGrid(int grid)
 {
+    LOG_DEBUG() << "BEGIN";
     m_grid = grid;
     emit gridChanged();
     quickWindow()->update();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::setZoom(float zoom)
 {
+    LOG_DEBUG() << "BEGIN";
     m_zoom = zoom;
     emit zoomChanged();
     // Reset the VUI control
     setSource(source());
     quickWindow()->update();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::setOffsetX(int x)
 {
+    LOG_DEBUG() << "BEGIN";
     m_offset.setX(x);
     emit offsetChanged();
     quickWindow()->update();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::setOffsetY(int y)
 {
+    LOG_DEBUG() << "BEGIN";
     m_offset.setY(y);
     emit offsetChanged();
     quickWindow()->update();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::setCurrentFilter(QmlFilter *filter, QmlMetadata *meta)
 {
+    LOG_DEBUG() << "BEGIN";
     if (meta && meta->type() == QmlMetadata::Filter
             && QFile::exists(meta->vuiFilePath().toLocalFile())) {
         filter->producer().set(kShotcutVuiMetaProperty, 1);
@@ -842,24 +906,30 @@ void GLWidget::setCurrentFilter(QmlFilter *filter, QmlMetadata *meta)
     } else {
         setBlankScene();
     }
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::setSnapToGrid(bool snap)
 {
+    LOG_DEBUG() << "BEGIN";
     m_snapToGrid = snap;
     emit snapToGridChanged();
+    LOG_DEBUG() << "END";
 }
 
 void GLWidget::updateTexture(GLuint yName, GLuint uName, GLuint vName)
 {
+    LOG_DEBUG() << "BEGIN";
     m_texture[0] = yName;
     m_texture[1] = uName;
     m_texture[2] = vName;
+    LOG_DEBUG() << "END";
 }
 
 // MLT consumer-frame-show event handler
 void GLWidget::on_frame_show(mlt_consumer, GLWidget *widget, mlt_event_data data)
 {
+    LOG_DEBUG() << "BEGIN";
     auto frame = Mlt::EventData(data).to_frame();
     if (frame.is_valid() && frame.get_int("rendered")) {
         int timeout = (widget->consumer()->get_int("real_time") > 0) ? 0 : 1000;
@@ -870,6 +940,7 @@ void GLWidget::on_frame_show(mlt_consumer, GLWidget *widget, mlt_event_data data
             LOG_WARNING() << "GLWidget dropped frame" << frame.get_position();
         }
     }
+    LOG_DEBUG() << "END";
 }
 
 RenderThread::RenderThread(thread_function_t function, void *data, QOpenGLContext *context,
@@ -880,6 +951,7 @@ RenderThread::RenderThread(thread_function_t function, void *data, QOpenGLContex
     , m_context(0)
     , m_surface(surface)
 {
+    LOG_DEBUG() << "BEGIN";
     if (context) {
         m_context = new QOpenGLContext;
         m_context->setFormat(context->format());
@@ -887,10 +959,12 @@ RenderThread::RenderThread(thread_function_t function, void *data, QOpenGLContex
         m_context->create();
         m_context->moveToThread(this);
     }
+    LOG_DEBUG() << "END";
 }
 
 void RenderThread::run()
 {
+    LOG_DEBUG() << "BEGIN";
     if (m_context) {
         m_context->makeCurrent(m_surface);
     }
@@ -899,6 +973,7 @@ void RenderThread::run()
         m_context->doneCurrent();
         delete m_context;
     }
+    LOG_DEBUG() << "END";
 }
 
 FrameRenderer::FrameRenderer(QOpenGLContext *shareContext, QSurface *surface)
@@ -910,6 +985,7 @@ FrameRenderer::FrameRenderer(QOpenGLContext *shareContext, QSurface *surface)
     , m_imageRequested(false)
     , m_gl32(0)
 {
+    LOG_DEBUG() << "BEGIN";
     Q_ASSERT(shareContext);
     m_renderTexture[0] = m_renderTexture[1] = m_renderTexture[2] = 0;
     m_displayTexture[0] = m_displayTexture[1] = m_displayTexture[2] = 0;
@@ -923,6 +999,7 @@ FrameRenderer::FrameRenderer(QOpenGLContext *shareContext, QSurface *surface)
     setObjectName("FrameRenderer");
     moveToThread(this);
     start();
+    LOG_DEBUG() << "END";
 }
 
 FrameRenderer::~FrameRenderer()
@@ -930,10 +1007,12 @@ FrameRenderer::~FrameRenderer()
     LOG_DEBUG() << "begin";
     delete m_context;
     delete m_gl32;
+    LOG_DEBUG() << "END";
 }
 
 void FrameRenderer::showFrame(Mlt::Frame frame)
 {
+    LOG_DEBUG() << "BEGIN";
     if (!Settings.playerGPU()) {
         m_displayFrame = SharedFrame(frame);
     }
@@ -1019,16 +1098,21 @@ void FrameRenderer::showFrame(Mlt::Frame frame)
     }
 
     m_semaphore.release();
+    LOG_DEBUG() << "END";
 }
 
 void FrameRenderer::requestImage()
 {
+    LOG_DEBUG() << "BEGIN";
     m_imageRequested = true;
+    LOG_DEBUG() << "END";
 }
 
 SharedFrame FrameRenderer::getDisplayFrame()
 {
+    LOG_DEBUG() << "BEGIN";
     return m_displayFrame;
+    LOG_DEBUG() << "END";
 }
 
 void FrameRenderer::cleanup()
@@ -1043,4 +1127,5 @@ void FrameRenderer::cleanup()
         m_renderTexture[0] = m_renderTexture[1] = m_renderTexture[2] = 0;
         m_displayTexture[0] = m_displayTexture[1] = m_displayTexture[2] = 0;
     }
+    LOG_DEBUG() << "END";
 }

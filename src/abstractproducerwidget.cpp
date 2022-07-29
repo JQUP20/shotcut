@@ -28,19 +28,23 @@ AbstractProducerWidget::~AbstractProducerWidget()
 
 void AbstractProducerWidget::setProducer(Mlt::Producer *producer)
 {
+    LOG_DEBUG() << "BEGIN";
     if (producer) {
         loadPreset(*producer);
         m_producer.reset(new Mlt::Producer(producer));
     } else {
         m_producer.reset();
     }
+    LOG_DEBUG() << "END";
 }
 
 bool AbstractProducerWidget::isDevice(const QWidget *widget)
 {
+    LOG_DEBUG() << "BEGIN";
     auto name = widget->objectName();
     return "AlsaWidget" == name || "AvfoundationProducerWidget" == name
            || "DecklinkProducerWidget" == name || "DirectShowVideoWidget" == name
            || "GDIgrabWidget" == name || "PulseAudioWidget" == name
            || "Video4LinuxWidget" == name || "X11grabWidget" == name;
+    LOG_DEBUG() << "END";
 }

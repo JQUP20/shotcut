@@ -2154,6 +2154,7 @@ bool MultitrackModel::removeTransitionByTrimOutValid(int trackIndex, int clipInd
 
 void MultitrackModel::filterAddedOrRemoved(Mlt::Producer *producer)
 {
+    LOG_DEBUG() << "BEGIN";
     if (!m_tractor || !producer || !producer->is_valid())
         return;
     mlt_service service = producer->get_service();
@@ -2183,10 +2184,12 @@ void MultitrackModel::filterAddedOrRemoved(Mlt::Producer *producer)
                 break;
             }
         }
+    LOG_DEBUG() << "END";
 }
 
 void MultitrackModel::onFilterChanged(Mlt::Service *filter)
 {
+    LOG_DEBUG() << "BEGIN";
     if (filter && filter->is_valid()) {
         Mlt::Service service(mlt_service(filter->get_data("service")));
         if (service.is_valid() && service.get(kMultitrackItemProperty)) {
@@ -2209,6 +2212,7 @@ void MultitrackModel::onFilterChanged(Mlt::Service *filter)
             }
         }
     }
+    LOG_DEBUG() << "END";
 }
 
 void MultitrackModel::moveClipToEnd(Mlt::Playlist &playlist, int trackIndex, int clipIndex,
