@@ -309,6 +309,7 @@ static void processProperties(QXmlStreamWriter &newXml, QVector<MltProperty> &pr
 
 bool ProxyManager::filterXML(QString &xmlString, QString root)
 {
+    LOG_INFO() << "bool ProxyManager::filterXML(QString &xmlString, QString root)  begin";
     QString output;
     QXmlStreamReader xml(xmlString);
     QXmlStreamWriter newXml(&output);
@@ -387,6 +388,7 @@ bool ProxyManager::filterXML(QString &xmlString, QString root)
         xmlString = output;
         return true;
     }
+    LOG_INFO() << "bool ProxyManager::filterXML(QString &xmlString, QString root)  end";
     return false;
 }
 
