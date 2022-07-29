@@ -259,6 +259,7 @@ void MainWindow::connectUISignals()
 
 void MainWindow::setupAndConnectUndoStack()
 {
+    LOG_INFO() << "void MainWindow::setupAndConnectUndoStack() begin";
     m_undoStack = new QUndoStack(this);
     m_undoStack->setUndoLimit(Settings.undoLimit());
     QAction *undoAction = m_undoStack->createUndoAction(this);
@@ -282,10 +283,13 @@ void MainWindow::setupAndConnectUndoStack()
     ui->actionRedo->setToolTip(redoAction->toolTip());
     connect(m_undoStack, SIGNAL(canUndoChanged(bool)), ui->actionUndo, SLOT(setEnabled(bool)));
     connect(m_undoStack, SIGNAL(canRedoChanged(bool)), ui->actionRedo, SLOT(setEnabled(bool)));
+
+    LOG_INFO() << "void MainWindow::setupAndConnectUndoStack() end";
 }
 
 void MainWindow::setupAndConnectPlayerWidget()
 {
+    LOG_INFO() << "void MainWindow::setupAndConnectPlayerWidget()   begin";
     m_player = new Player;
     MLT.videoWidget()->installEventFilter(this);
     ui->centralWidget->layout()->addWidget(m_player);
@@ -298,6 +302,8 @@ void MainWindow::setupAndConnectPlayerWidget()
     connect(MLT.videoWidget(), SIGNAL(paused()), m_player, SLOT(showPaused()));
     connect(MLT.videoWidget(), SIGNAL(playing()), m_player, SLOT(showPlaying()));
     connect(MLT.videoWidget(), SIGNAL(toggleZoom(bool)), m_player, SLOT(toggleZoom(bool)));
+
+    LOG_INFO() << "void MainWindow::setupAndConnectPlayerWidget()   end";
 }
 
 void MainWindow::setupLayoutSwitcher()
