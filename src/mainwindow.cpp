@@ -308,6 +308,7 @@ void MainWindow::setupAndConnectPlayerWidget()
 
 void MainWindow::setupLayoutSwitcher()
 {
+    LOG_INFO() << "void MainWindow::setupLayoutSwitcher() begin";
     auto group = new QActionGroup(this);
     group->addAction(ui->actionLayoutLogging);
     group->addAction(ui->actionLayoutEditing);
@@ -340,10 +341,13 @@ void MainWindow::setupLayoutSwitcher()
         ui->actionLayoutEditing->setChecked(true);
         break;
     }
+
+    LOG_INFO() << "void MainWindow::setupLayoutSwitcher() end";
 }
 
 void MainWindow::centerLayoutInRemainingToolbarSpace()
 {
+    LOG_INFO() << "void MainWindow::centerLayoutInRemainingToolbarSpace() begin";
     auto spacer = new QWidget;
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->mainToolBar->insertWidget(ui->dummyAction, spacer);
@@ -351,9 +355,11 @@ void MainWindow::centerLayoutInRemainingToolbarSpace()
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->mainToolBar->addWidget(spacer);
     updateLayoutSwitcher();
+    LOG_INFO() << "void MainWindow::centerLayoutInRemainingToolbarSpace() end";
 }
 void MainWindow::setupAndConnectDocks()
 {
+    LOG_INFO() << "void MainWindow::setupAndConnectDocks() begin";
     m_scopeController = new ScopeController(this, ui->menuView);
     QDockWidget *audioMeterDock = findChild<QDockWidget *>("AudioPeakMeterDock");
     if (audioMeterDock) {
@@ -610,16 +616,21 @@ void MainWindow::setupAndConnectDocks()
     tabifyDockWidget(m_keyframesDock, m_timelineDock);
     m_recentDock->raise();
     resetDockCorners();
+
+    LOG_INFO() << "void MainWindow::setupAndConnectDocks() end";
 }
 
 void MainWindow::setupMenuView()
 {
+    LOG_INFO() << "void MainWindow::setupMenuView() begin";
     ui->menuView->addSeparator();
     ui->menuView->addAction(ui->actionApplicationLog);
+    LOG_INFO() << "void MainWindow::setupMenuView() end";
 }
 
 void MainWindow::connectVideoWidgetSignals()
 {
+    LOG_INFO() << "void MainWindow::connectVideoWidgetSignals() begin";
     Mlt::GLWidget *videoWidget = (Mlt::GLWidget *) & (MLT);
     connect(videoWidget, SIGNAL(dragStarted()), m_playlistDock, SLOT(onPlayerDragStarted()));
     connect(videoWidget, SIGNAL(seekTo(int)), m_player, SLOT(seek(int)));
@@ -630,16 +641,21 @@ void MainWindow::connectVideoWidgetSignals()
             SIGNAL(newFrame(const SharedFrame &)));
     connect(m_filterController, SIGNAL(currentFilterChanged(QmlFilter *, QmlMetadata *, int)),
             videoWidget, SLOT(setCurrentFilter(QmlFilter *, QmlMetadata *)));
+
+    LOG_INFO() << "void MainWindow::connectVideoWidgetSignals() end";
 }
 
 void MainWindow::setupAndConnectLeapNetworkListener()
 {
+    LOG_INFO() << "void MainWindow::setupAndConnectLeapNetworkListener() begin";
     LeapNetworkListener *leap = new LeapNetworkListener(this);
     connect(leap, SIGNAL(shuttle(float)), SLOT(onShuttle(float)));
     connect(leap, SIGNAL(jogRightFrame()), SLOT(stepRightOneFrame()));
     connect(leap, SIGNAL(jogRightSecond()), SLOT(stepRightOneSecond()));
     connect(leap, SIGNAL(jogLeftFrame()), SLOT(stepLeftOneFrame()));
     connect(leap, SIGNAL(jogLeftSecond()), SLOT(stepLeftOneSecond()));
+
+    LOG_INFO() << "void MainWindow::setupAndConnectLeapNetworkListener() end";
 }
 
 void MainWindow::onFocusWindowChanged(QWindow *) const
@@ -1032,6 +1048,7 @@ void MainWindow::setupSettingsMenu()
 
 void MainWindow::setupOpenOtherMenu()
 {
+    LOG_INFO() << "void MainWindow::setupOpenOtherMenu() begin";
     // Open Other toolbar menu button
     QScopedPointer<Mlt::Properties> mltProducers(MLT.repository()->producers());
     QScopedPointer<Mlt::Properties> mltFilters(MLT.repository()->filters());
@@ -1078,6 +1095,8 @@ void MainWindow::setupOpenOtherMenu()
 #endif
     if (mltProducers->get_data("decklink"))
         otherMenu->addAction(tr("SDI/HDMI"), this, SLOT(onOpenOtherTriggered()))->setObjectName("decklink");
+
+    LOG_INFO() << "void MainWindow::setupOpenOtherMenu() end";
 }
 
 QAction *MainWindow::addProfile(QActionGroup *actionGroup, const QString &desc, const QString &name)
@@ -1932,6 +1951,7 @@ void MainWindow::configureVideoWidget()
 
 void MainWindow::setCurrentFile(const QString &filename)
 {
+    LOG_INFO() << "void MainWindow::setCurrentFile(const QString &filename) begin";
     QString shownName = tr("Untitled");
     if (filename == untitledFileName())
         m_currentFile.clear();
@@ -2894,6 +2914,7 @@ void MainWindow::on_actionOpenOther_triggered()
 
 void MainWindow::onProducerOpened(bool withReopen)
 {
+    LOG_INFO() << "void MainWindow::onProducerOpened(bool withReopen) begin";
     QWidget *w = loadProducerWidget(MLT.producer());
     if (withReopen && w && !MLT.producer()->get(kMultitrackItemProperty)) {
         if (-1 != w->metaObject()->indexOfSignal("producerReopened(bool)"))
@@ -2939,6 +2960,7 @@ void MainWindow::onProducerOpened(bool withReopen)
     else if (!MLT.URL().isEmpty())
         setCurrentFile(MLT.URL());
     on_actionJack_triggered(ui->actionJack && ui->actionJack->isChecked());
+    LOG_INFO() << "void MainWindow::onProducerOpened(bool withReopen) end";
 }
 
 void MainWindow::onProducerChanged()
@@ -3283,12 +3305,14 @@ void MainWindow::onNoteModified()
 
 void MainWindow::onCutModified()
 {
+    LOG_INFO() << "void MainWindow::onCutModified() begin";
     if (!playlist() && !multitrack()) {
         setWindowModified(true);
     }
     if (playlist())
         m_playlistDock->setUpdateButtonEnabled(true);
     sourceUpdated();
+    LOG_INFO() << "void MainWindow::onCutModified() end";
 }
 
 void MainWindow::onProducerModified()
@@ -3743,6 +3767,7 @@ void MainWindow::changeInterpolation(bool checked, const char *method)
 
 void MainWindow::processMultipleFiles()
 {
+    LOG_INFO() << "void MainWindow::processMultipleFiles() begin";
     if (m_multipleFiles.length() <= 0)
         return;
     QStringList multipleFiles = m_multipleFiles;
@@ -3776,6 +3801,9 @@ void MainWindow::processMultipleFiles()
         updateThumbnails();
         m_isPlaylistLoaded = false;
     }
+
+
+    LOG_INFO() << "void MainWindow::processMultipleFiles() end";
 }
 
 void MainWindow::onLanguageTriggered(QAction *action)
@@ -4279,14 +4307,18 @@ void MainWindow::on_actionClose_triggered()
 
 void MainWindow::onPlayerTabIndexChanged(int index)
 {
+    LOG_INFO() << "void MainWindow::onPlayerTabIndexChanged(int index) begin";
     if (Player::SourceTabIndex == index)
         m_timelineDock->saveAndClearSelection();
     else
         m_timelineDock->restoreSelection();
+
+    LOG_INFO() << "void MainWindow::onPlayerTabIndexChanged(int index) end";
 }
 
 void MainWindow::onUpgradeCheckFinished(QNetworkReply *reply)
 {
+    LOG_INFO() << "void MainWindow::onUpgradeCheckFinished(QNetworkReply *reply) begin";
     if (!reply->error()) {
         QByteArray response = reply->readAll();
         LOG_DEBUG() << "response: " << response;
@@ -4319,6 +4351,8 @@ void MainWindow::onUpgradeCheckFinished(QNetworkReply *reply)
     connect(action, SIGNAL(triggered(bool)), SLOT(onUpgradeTriggered()));
     showStatusMessage(action);
     reply->deleteLater();
+    LOG_INFO() << "void MainWindow::onUpgradeCheckFinished(QNetworkReply *reply) end";
+
 }
 
 void MainWindow::onUpgradeTriggered()
@@ -5250,11 +5284,13 @@ void MainWindow::clearCurrentLayout()
 
 void MainWindow::onClipboardChanged()
 {
+    LOG_INFO() << "void MainWindow::onClipboardChanged() begin";
     auto s = QGuiApplication::clipboard()->text();
     if (MLT.isMltXml(s) && !s.contains(kShotcutFiltersClipboard)) {
         m_clipboardUpdatedAt = QDateTime::currentDateTime();
         LOG_DEBUG() << m_clipboardUpdatedAt;
     }
+    LOG_INFO() << "void MainWindow::onClipboardChanged() end";
 }
 
 void MainWindow::sourceUpdated()
@@ -5266,7 +5302,9 @@ void MainWindow::sourceUpdated()
 
 void MainWindow::resetSourceUpdated()
 {
+    LOG_INFO() << "void MainWindow::resetSourceUpdated() begin";
     m_sourceUpdatedAt.setSecsSinceEpoch(0);
+    LOG_INFO() << "void MainWindow::resetSourceUpdated() end";
 }
 
 void MainWindow::on_actionExportChapters_triggered()

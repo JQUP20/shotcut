@@ -659,6 +659,8 @@ void ProxyManager::generateIfNotExistsAll(Mlt::Producer &producer)
 
 bool ProxyManager::removePending()
 {
+
+    LOG_INFO() << "bool ProxyManager::removePending() begin";
     bool foundAny = false;
     QDir dir(MLT.projectFolder());
     if (!MLT.projectFolder().isEmpty() && dir.exists()) {
@@ -674,6 +676,10 @@ bool ProxyManager::removePending()
             foundAny |= QFile::remove(dir.filePath(s));
         }
     }
+
+
+    LOG_INFO() << "bool ProxyManager::removePending() end";
+
     //TODO if any pending remove, let user know and offer to regenerate?
     return foundAny;
 }

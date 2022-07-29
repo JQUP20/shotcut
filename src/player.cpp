@@ -578,6 +578,7 @@ void Player::reset()
 
 void Player::onProducerOpened(bool play)
 {
+    LOG_INFO() << "void Player::onProducerOpened(bool play)  begin";
     m_projectWidget->hide();
     m_videoWidget->show();
     m_duration = MLT.producer()->get_length();
@@ -638,6 +639,8 @@ void Player::onProducerOpened(bool play)
             }
         }
     }
+    LOG_INFO() << "void Player::onProducerOpened(bool play)  end";
+
 }
 
 void Player::postProducerOpened()
@@ -803,16 +806,23 @@ void Player::fastForward(bool forceChangeDirection)
 
 void Player::showPaused()
 {
+    LOG_INFO() << "void Player::showPaused() begin";
+
     actionPlay->setIcon(m_playIcon);
     actionPlay->setText(tr("Play"));
     actionPlay->setToolTip(tr("Start playback (L)"));
+    LOG_INFO() << "void Player::showPaused() end";
+
 }
 
 void Player::showPlaying()
 {
+    LOG_INFO() << "void Player::showPlaying() begin";
     actionPlay->setIcon(m_pauseIcon);
     actionPlay->setText(tr("Pause"));
     actionPlay->setToolTip(tr("Pause playback (K)"));
+    LOG_INFO() << "void Player::showPlaying() end";
+
 }
 
 void Player::switchToTab(TabIndex index)
