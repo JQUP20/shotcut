@@ -56,6 +56,7 @@ void AutoSaveFile::changeManagedFile(const QString &filename)
 
 bool AutoSaveFile::open(OpenMode openmode)
 {
+    LOG_INFO() << "bool AutoSaveFile::open(OpenMode openmode)   ... " ;
     QString tempFile;
 
     if (m_managedFileNameChanged) {

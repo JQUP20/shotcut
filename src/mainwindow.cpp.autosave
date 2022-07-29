@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2011-2022 Meltytech, LLC
  *
  * This program is free software: you can redistribute it and/or modify
@@ -58,7 +58,7 @@
 #include "database.h"
 #include "widgets/gltestwidget.h"
 #include "docks/timelinedock.h"
-#include "widgets/lumamixtransition.h"
+#include "widgets/lumamixtransition.h"git config --global https.proxy "localhost:19180"
 #include "qmltypes/qmlutilities.h"
 #include "qmltypes/qmlapplication.h"
 #include "autosavefile.h"
@@ -1092,7 +1092,6 @@ QAction *MainWindow::addLayout(QActionGroup *actionGroup, const QString &name)
 
 void MainWindow::open(Mlt::Producer *producer)
 {
-    LOG_INFO() << "void MainWindow::open(Mlt::Producer *producer)";
     if (!producer->is_valid())
         showStatusMessage(tr("Failed to open "));
     else if (producer->get_int("error"))
@@ -1270,7 +1269,6 @@ void MainWindow::stepLeftBySeconds(int sec)
 
 void MainWindow::doAutosave()
 {
-    LOG_INFO() << "void MainWindow::doAutosave() ... start";
     QMutexLocker locker(&m_autosaveMutex);
     if (m_autosaveFile) {
         bool success = false;
@@ -1283,7 +1281,6 @@ void MainWindow::doAutosave()
             LOG_ERROR() << "failed to open autosave file for writing" << m_autosaveFile->fileName();
         }
     }
-    LOG_INFO() << "void MainWindow::doAutosave() ... end";
 }
 
 void MainWindow::setFullScreen(bool isFullScreen)
@@ -1446,15 +1443,12 @@ void MainWindow::showIncompatibleProjectMessage(const QString &shotcutVersion)
 
 static void autosaveTask(MainWindow *p)
 {
-    LOG_INFO() << "static void autosaveTask(MainWindow *p)  ... begin" ;
     LOG_DEBUG_TIME();
     p->doAutosave();
-    LOG_INFO() << "static void autosaveTask(MainWindow *p)  ... end" ;
 }
 
 void MainWindow::onAutosaveTimeout()
 {
-    LOG_INFO() << "void MainWindow::onAutosaveTimeout()  ... begin" ;
     if (isWindowModified()) {
         QtConcurrent::run(autosaveTask, this);
     }
@@ -1483,7 +1477,6 @@ void MainWindow::onAutosaveTimeout()
             break;
         }
     }
-    LOG_INFO() << "void MainWindow::onAutosaveTimeout()  ... end" ;
 }
 
 bool MainWindow::open(QString url, const Mlt::Properties *properties, bool play)
@@ -1599,7 +1592,6 @@ bool MainWindow::open(QString url, const Mlt::Properties *properties, bool play)
 
 void MainWindow::openMultiple(const QStringList &paths)
 {
-    LOG_INFO() << "void MainWindow::openMultiple(const QStringList &paths)";
     if (paths.size() > 1) {
         QList<QUrl> urls;
         foreach (const QString &s, paths)
@@ -3337,7 +3329,6 @@ void MainWindow::on_actionForum_triggered()
 
 bool MainWindow::saveXML(const QString &filename, bool withRelativePaths)
 {
-    LOG_INFO() << "bool MainWindow::saveXML(const QString &filename, bool withRelativePaths) begin";
     bool result;
     QString notes = m_notesDock->getText();
     if (m_timelineDock->model()->rowCount() > 0) {
@@ -3356,7 +3347,6 @@ bool MainWindow::saveXML(const QString &filename, bool withRelativePaths)
         Mlt::Playlist playlist(MLT.profile());
         result = MLT.saveXML(filename, &playlist, withRelativePaths, nullptr, false, notes);
     }
-     LOG_INFO() << "bool MainWindow::saveXML(const QString &filename, bool withRelativePaths) end";
     return result;
 }
 
